@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run PostRunCheck",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}\\Run-PostRunCheck.ps1",
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "Build PostRunCheck"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build PostRunCheck",
+      "type": "process",
+      "command": "powershell.exe",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}\\Build-PostRunCheck.ps1"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Run PostRunCheck",
+      "type": "process",
+      "command": "${workspaceFolder}\\PostRunCheck.exe",
+      "dependsOn": "Build PostRunCheck",
+      "dependsOrder": "sequence",
+      "problemMatcher": []
+    }
+  ]
+}
