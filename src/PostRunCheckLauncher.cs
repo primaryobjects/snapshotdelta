@@ -11,11 +11,13 @@ internal static class PostRunCheckLauncher
         try
         {
             string appDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            string guiScript = Path.Combine(appDirectory, "PostRunCheck-GUI.ps1");
+            string guiScript = Path.GetFullPath(Path.Combine(
+                appDirectory,
+                @"..\scripts\PostRunCheck-GUI.ps1"));
             if (!File.Exists(guiScript))
             {
                 throw new FileNotFoundException(
-                    "PostRunCheck-GUI.ps1 must be in the same folder as PostRunCheck.exe.",
+                    "PostRunCheck-GUI.ps1 must be present in the project's scripts folder.",
                     guiScript);
             }
 

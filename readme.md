@@ -52,16 +52,16 @@ C:\PostRunChecks_20261004_1217\
 
 ### Use the graphical app
 
-On Windows, double-click `PostRunCheck.exe` to open the GUI; you do not need to
-run either triage PowerShell script manually. Keep `PostRunCheck.exe`,
-`PostRunCheck-GUI.ps1`, `PostRunCheck.ps1`, and `Compare-Triage.ps1` together in
-the same folder. Run the app as Administrator so it can save snapshots in
-`C:\PostRunChecks_...` and collect all indicators.
+On Windows, double-click `dist\PostRunCheck.exe` to open the GUI; you do not
+need to run either triage PowerShell script manually. Keep the `scripts` folder
+beside `dist` so the app can find its GUI and triage scripts. Run the app as
+Administrator so it can save snapshots in `C:\PostRunChecks_...` and collect
+all indicators. The launcher source is in `src`.
 
 The executable can be rebuilt on Windows with:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-PostRunCheck.ps1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-PostRunCheck.ps1
 ```
 
 In VS Code, press **F5** to build and launch the app (requires the PowerShell
@@ -76,6 +76,10 @@ PostRunCheck**.
    snapshot, then click **Compare Snapshots**. The report appears in the app and
    is also saved in the after-snapshot folder.
 
+Comparison results open to an **Overview** of all categories. Red X cards and
+tabs indicate changes; green checks indicate no changes. Click a card or tab to
+see that category's findings, or open **Full Report** for the original report.
+
 The snapshot list is refreshed after taking a snapshot; **Refresh Snapshots**
 can be used to find folders created outside the app. **Open Selected Snapshot**
 opens the selected after-snapshot folder in Explorer.
@@ -84,16 +88,16 @@ opens the selected after-snapshot folder in Explorer.
 
 1. Inside your VM, run PowerShell as Administrator and run the script.
     ```bash
-    powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\PostRunCheck.ps1
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\PostRunCheck.ps1
     ```
 2. Run suspect program.
 3. Run the script again.
     ```bash
-    powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\PostRunCheck.ps1
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\PostRunCheck.ps1
     ```
 4. Run a diff between the logs and compare results.
     ```bash
-    powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Compare-Triage.ps1 -BaselinePath "C:\PostRunChecks_20261004_1230" -AfterPath "C:\PostRunChecks_20261004_1245"
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Compare-Triage.ps1 -BaselinePath "C:\PostRunChecks_20261004_1230" -AfterPath "C:\PostRunChecks_20261004_1245"
     ```
 
 ## Script Output

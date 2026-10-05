@@ -10,7 +10,7 @@
         "-ExecutionPolicy",
         "Bypass",
         "-File",
-        "${workspaceFolder}\\Build-PostRunCheck.ps1"
+        "${workspaceFolder}\\scripts\\Build-PostRunCheck.ps1"
       ],
       "group": {
         "kind": "build",
@@ -21,7 +21,7 @@
     {
       "label": "Run PostRunCheck",
       "type": "process",
-      "command": "${workspaceFolder}\\PostRunCheck.exe",
+      "command": "${workspaceFolder}\\dist\\PostRunCheck.exe",
       "dependsOn": "Build PostRunCheck",
       "dependsOrder": "sequence",
       "problemMatcher": []

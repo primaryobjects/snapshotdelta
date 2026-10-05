@@ -86,22 +86,236 @@ $openFolderButton.Text = "Open Selected Snapshot"
 $openFolderButton.Location = New-Object System.Drawing.Point(190, 142)
 $openFolderButton.Size = New-Object System.Drawing.Size(180, 34)
 
-$reportBox = New-Object System.Windows.Forms.TextBox
-$reportBox.Multiline = $true
-$reportBox.ReadOnly = $true
-$reportBox.WordWrap = $false
-$reportBox.ScrollBars = "Both"
-$reportBox.Font = New-Object System.Drawing.Font("Consolas", 9)
-$reportBox.Location = New-Object System.Drawing.Point(18, 190)
-$reportBox.Size = New-Object System.Drawing.Size(847, 445)
-$reportBox.Anchor = "Top,Bottom,Left,Right"
-$reportBox.Text = "Take a snapshot after starting the app, then take another after running the software you want to inspect.`r`nSelect the two snapshots above and click Compare Snapshots."
+$resultsTabs = New-Object System.Windows.Forms.TabControl
+$resultsTabs.Location = New-Object System.Drawing.Point(18, 190)
+$resultsTabs.Size = New-Object System.Drawing.Size(847, 445)
+$resultsTabs.Anchor = "Top,Bottom,Left,Right"
+$resultsTabs.Font = New-Object System.Drawing.Font("Segoe UI", 9)
+$resultsTabs.DrawMode = "OwnerDrawFixed"
+$resultsTabs.ItemSize = New-Object System.Drawing.Size(145, 28)
+$resultsTabs.add_DrawItem({
+    param($sender, $eventArgs)
+
+    $page = $sender.TabPages[$eventArgs.Index]
+    $eventArgs.DrawBackground()
+    $isChanged = $page.Tag -is [bool] -and $page.Tag
+    $isUnchanged = $page.Tag -is [bool] -and -not $page.Tag
+    if ($isChanged) {
+        $symbol = [string][char]0x2716
+        $color = [System.Drawing.Color]::Firebrick
+    } elseif ($isUnchanged) {
+        $symbol = [string][char]0x2713
+        $color = [System.Drawing.Color]::ForestGreen
+    } elseif ($page.Tag -eq "Overview") {
+        $symbol = [string][char]0x25A6
+        $color = [System.Drawing.SystemColors]::ControlText
+    } else {
+        $symbol = [string][char]0x2630
+        $color = [System.Drawing.SystemColors]::ControlText
+    }
+
+    $iconFont = New-Object System.Drawing.Font("Segoe UI Symbol", 9, [System.Drawing.FontStyle]::Bold)
+    $brush = New-Object System.Drawing.SolidBrush($color)
+    try {
+        $iconBounds = New-Object System.Drawing.RectangleF(
+            ($eventArgs.Bounds.X + 5),
+            ($eventArgs.Bounds.Y + 5),
+            18,
+            18
+        )
+        $textBounds = New-Object System.Drawing.RectangleF(
+            ($eventArgs.Bounds.X + 24),
+            ($eventArgs.Bounds.Y + 4),
+            ($eventArgs.Bounds.Width - 26),
+            20
+        )
+        $eventArgs.Graphics.DrawString($symbol, $iconFont, $brush, $iconBounds)
+        $eventArgs.Graphics.DrawString($page.Text, $sender.Font, [System.Drawing.SystemBrushes]::ControlText, $textBounds)
+    } finally {
+        $brush.Dispose()
+        $iconFont.Dispose()
+    }
+})
+
+$fullReportPage = New-Object System.Windows.Forms.TabPage
+$fullReportPage.Text = "Full Report"
+$fullReportBox = New-Object System.Windows.Forms.TextBox
+$fullReportBox.Multiline = $true
+$fullReportBox.ReadOnly = $true
+$fullReportBox.WordWrap = $false
+$fullReportBox.ScrollBars = "Both"
+$fullReportBox.Font = New-Object System.Drawing.Font("Consolas", 9)
+$fullReportBox.Dock = "Fill"
+$fullReportBox.Text = "Take a snapshot after starting the app, then take another after running the software you want to inspect.`r`nSelect the two snapshots above and click Compare Snapshots."
+$fullReportPage.Controls.Add($fullReportBox)
+[void]$resultsTabs.TabPages.Add($fullReportPage)
 
 $form.Controls.AddRange(@(
     $snapshotButton, $refreshButton, $statusLabel, $baselineLabel,
     $baselineCombo, $afterLabel, $afterCombo, $compareButton,
-    $openFolderButton, $reportBox
+    $openFolderButton, $resultsTabs
 ))
+
+function Set-FullReportView {
+    param([string]$Text)
+
+    $resultsTabs.TabPages.Clear()
+    [void]$resultsTabs.TabPages.Add($fullReportPage)
+    $resultsTabs.SelectedTab = $fullReportPage
+    $fullReportBox.Text = $Text
+}
+
+function Show-ComparisonResults {
+    param([string]$ReportText)
+
+    $sectionNames = @(
+        "New Processes",
+        "New Services",
+        "New Startup (HKLM)",
+        "New Startup (HKCU)",
+        "New Scheduled Tasks",
+        "New Network Connections",
+        "Hosts File Changes",
+        "New Installed Programs",
+        "New Defender Detections"
+    )
+    $sections = [ordered]@{}
+    $shortNames = @{
+        "New Processes" = "Processes"
+        "New Services" = "Services"
+        "New Startup (HKLM)" = "Startup HKLM"
+        "New Startup (HKCU)" = "Startup HKCU"
+        "New Scheduled Tasks" = "Scheduled Tasks"
+        "New Network Connections" = "Network Connections"
+        "Hosts File Changes" = "Hosts File"
+        "New Installed Programs" = "Installed Programs"
+        "New Defender Detections" = "Defender Detections"
+    }
+    foreach ($sectionName in $sectionNames) {
+        $sections[$sectionName] = New-Object System.Collections.Generic.List[string]
+    }
+
+    $currentSection = $null
+    foreach ($line in ($ReportText -split "\r?\n")) {
+        $trimmedLine = $line.Trim()
+        if ($trimmedLine.EndsWith(":")) {
+            $candidate = $trimmedLine.Substring(0, $trimmedLine.Length - 1)
+            if ($sections.Contains($candidate)) {
+                $currentSection = $candidate
+                continue
+            }
+        }
+        if (-not $currentSection -or [string]::IsNullOrWhiteSpace($trimmedLine) -or $trimmedLine -match '^-{3,}$') {
+            continue
+        }
+        [void]$sections[$currentSection].Add($trimmedLine)
+    }
+
+    $resultsTabs.TabPages.Clear()
+    $overviewPage = New-Object System.Windows.Forms.TabPage
+    $overviewPage.Text = "Overview"
+    $overviewPage.Tag = "Overview"
+    $overviewPage.BackColor = [System.Drawing.Color]::White
+    $overviewPanel = New-Object System.Windows.Forms.FlowLayoutPanel
+    $overviewPanel.Dock = "Fill"
+    $overviewPanel.AutoScroll = $true
+    $overviewPanel.WrapContents = $true
+    $overviewPanel.Padding = New-Object System.Windows.Forms.Padding(12)
+    [void]$resultsTabs.TabPages.Add($overviewPage)
+    $overviewPage.Controls.Add($overviewPanel)
+
+    $changedSections = 0
+    foreach ($sectionName in $sectionNames) {
+        $entries = @($sections[$sectionName] | Where-Object { $_ -ne "No changes detected." })
+        $hasChanges = $entries.Count -gt 0
+        if ($hasChanges) {
+            $changedSections++
+        }
+
+        $page = New-Object System.Windows.Forms.TabPage
+        $page.Text = $shortNames[$sectionName]
+        $page.Tag = [bool]$hasChanges
+        $page.BackColor = [System.Drawing.Color]::White
+
+        $detailsBox = New-Object System.Windows.Forms.TextBox
+        $detailsBox.Multiline = $true
+        $detailsBox.ReadOnly = $true
+        $detailsBox.WordWrap = $true
+        $detailsBox.ScrollBars = "Vertical"
+        $detailsBox.Font = New-Object System.Drawing.Font("Consolas", 10)
+        $detailsBox.Dock = "Fill"
+        if ($hasChanges) {
+            $detailsBox.Text = $entries -join [Environment]::NewLine
+        } else {
+            $detailsBox.Text = "No changes detected in this section."
+        }
+
+        $header = New-Object System.Windows.Forms.Panel
+        $header.Height = 105
+        $header.Dock = "Top"
+
+        $iconLabel = New-Object System.Windows.Forms.Label
+        $iconLabel.Text = if ($hasChanges) { [string][char]0x2716 } else { [string][char]0x2713 }
+        $iconLabel.ForeColor = if ($hasChanges) { [System.Drawing.Color]::Firebrick } else { [System.Drawing.Color]::ForestGreen }
+        $iconLabel.Font = New-Object System.Drawing.Font("Segoe UI Symbol", 40, [System.Drawing.FontStyle]::Bold)
+        $iconLabel.Location = New-Object System.Drawing.Point(16, 8)
+        $iconLabel.Size = New-Object System.Drawing.Size(68, 78)
+        $iconLabel.TextAlign = "MiddleCenter"
+
+        $headingLabel = New-Object System.Windows.Forms.Label
+        $headingLabel.Text = $sectionName
+        $headingLabel.Font = New-Object System.Drawing.Font("Segoe UI", 15, [System.Drawing.FontStyle]::Bold)
+        $headingLabel.Location = New-Object System.Drawing.Point(98, 17)
+        $headingLabel.Size = New-Object System.Drawing.Size(690, 30)
+        $headingLabel.Anchor = "Top,Left,Right"
+
+        $summaryLabel = New-Object System.Windows.Forms.Label
+        $summaryLabel.Text = if ($hasChanges) {
+            "$($entries.Count) new or changed item(s) - review the details below."
+        } else {
+            "No changes detected."
+        }
+        $summaryLabel.ForeColor = if ($hasChanges) { [System.Drawing.Color]::Firebrick } else { [System.Drawing.Color]::ForestGreen }
+        $summaryLabel.Font = New-Object System.Drawing.Font("Segoe UI", 11, [System.Drawing.FontStyle]::Bold)
+        $summaryLabel.Location = New-Object System.Drawing.Point(100, 53)
+        $summaryLabel.Size = New-Object System.Drawing.Size(690, 26)
+        $summaryLabel.Anchor = "Top,Left,Right"
+
+        $header.Controls.AddRange(@($iconLabel, $headingLabel, $summaryLabel))
+        $page.Controls.Add($detailsBox)
+        $page.Controls.Add($header)
+        [void]$resultsTabs.TabPages.Add($page)
+
+        $card = New-Object System.Windows.Forms.Button
+        $card.Text = "$($iconLabel.Text)  $($shortNames[$sectionName])`r`n$($summaryLabel.Text)"
+        $card.TextAlign = "MiddleLeft"
+        $card.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
+        $card.Size = New-Object System.Drawing.Size(245, 74)
+        $card.Margin = New-Object System.Windows.Forms.Padding(7)
+        $card.UseVisualStyleBackColor = $false
+        $card.BackColor = if ($hasChanges) {
+            [System.Drawing.Color]::MistyRose
+        } else {
+            [System.Drawing.Color]::Honeydew
+        }
+        $card.ForeColor = if ($hasChanges) {
+            [System.Drawing.Color]::Firebrick
+        } else {
+            [System.Drawing.Color]::ForestGreen
+        }
+        $card.Tag = $page
+        $card.Add_Click({
+            param($sender, $eventArgs)
+            $resultsTabs.SelectedTab = $sender.Tag
+        })
+        $overviewPanel.Controls.Add($card)
+    }
+
+    $fullReportBox.Text = $ReportText
+    [void]$resultsTabs.TabPages.Add($fullReportPage)
+    $resultsTabs.SelectedTab = $overviewPage
+    return $changedSections
+}
 
 function Complete-ScriptOperation {
     param($Result, [string]$ErrorMessage)
@@ -114,7 +328,7 @@ function Complete-ScriptOperation {
 
     if ($ErrorMessage) {
         $statusLabel.Text = "Operation failed."
-        $reportBox.Text = $ErrorMessage
+        Set-FullReportView -Text $ErrorMessage
         [System.Windows.Forms.MessageBox]::Show(
             $ErrorMessage,
             "PostRunCheck error",
@@ -129,33 +343,42 @@ function Complete-ScriptOperation {
             Update-SnapshotLists -PreferredPath $result.SnapshotPath
         } catch {
             $statusLabel.Text = "Snapshot saved, but the snapshot list could not be refreshed."
-            $reportBox.Text = "Snapshot saved to:`r`n$($result.SnapshotPath)`r`n`r`nCould not refresh the snapshot list:`r`n$($_.Exception.Message)"
+            Set-FullReportView -Text "Snapshot saved to:`r`n$($result.SnapshotPath)`r`n`r`nCould not refresh the snapshot list:`r`n$($_.Exception.Message)"
             return
         }
         if ([string]::IsNullOrWhiteSpace($result.Errors)) {
             $statusLabel.Text = "Snapshot saved: $($result.SnapshotPath)"
-            $reportBox.Text = "Snapshot saved to:`r`n$($result.SnapshotPath)`r`n`r`n$($result.Output.Trim())"
+            Set-FullReportView -Text "Snapshot saved to:`r`n$($result.SnapshotPath)`r`n`r`n$($result.Output.Trim())"
         } else {
             $statusLabel.Text = "Snapshot saved with collection errors; review the details."
-            $reportBox.Text = "Snapshot saved to:`r`n$($result.SnapshotPath)`r`n`r`nCollection errors:`r`n$($result.Errors.Trim())`r`n`r`n$($result.Output.Trim())"
+            Set-FullReportView -Text "Snapshot saved to:`r`n$($result.SnapshotPath)`r`n`r`nCollection errors:`r`n$($result.Errors.Trim())`r`n`r`n$($result.Output.Trim())"
         }
     } else {
         if (-not (Test-Path -LiteralPath $result.ReportPath -PathType Leaf)) {
             $statusLabel.Text = "Comparison report was not created."
-            $reportBox.Text = "Expected report not found: $($result.ReportPath)`r`n`r`n$($result.Output)"
+            Set-FullReportView -Text "Expected report not found: $($result.ReportPath)`r`n`r`n$($result.Output)"
             return
         }
         try {
-            $reportBox.Text = Get-Content -LiteralPath $result.ReportPath -Raw -ErrorAction Stop
+            $reportText = Get-Content -LiteralPath $result.ReportPath -Raw -ErrorAction Stop
             if ([string]::IsNullOrWhiteSpace($result.Errors)) {
-                $statusLabel.Text = "Comparison complete: $($result.ReportPath)"
+                $changedSections = Show-ComparisonResults -ReportText $reportText
+                if ($changedSections -eq 0) {
+                    $statusLabel.ForeColor = [System.Drawing.Color]::ForestGreen
+                    $statusLabel.Text = "No changes detected across the compared sections."
+                } else {
+                    $statusLabel.ForeColor = [System.Drawing.Color]::Firebrick
+                    $statusLabel.Text = "Changes found in $changedSections section(s). Select a flagged tab to investigate."
+                }
             } else {
-                $statusLabel.Text = "Comparison completed with errors; review the details."
-                $reportBox.AppendText("`r`n`r`nPowerShell errors:`r`n$($result.Errors.Trim())")
+                $reportText += "`r`n`r`nPowerShell errors:`r`n$($result.Errors.Trim())"
+                [void](Show-ComparisonResults -ReportText $reportText)
+                $statusLabel.ForeColor = [System.Drawing.Color]::Firebrick
+                $statusLabel.Text = "Comparison completed with errors; review the full report."
             }
         } catch {
             $statusLabel.Text = "Could not read the comparison report."
-            $reportBox.Text = "Report created at $($result.ReportPath), but could not be read:`r`n$($_.Exception.Message)"
+            Set-FullReportView -Text "Report created at $($result.ReportPath), but could not be read:`r`n$($_.Exception.Message)"
         }
     }
 }
@@ -207,7 +430,8 @@ function Set-ControlsBusy {
     $compareButton.Enabled = $false
     $openFolderButton.Enabled = $false
     $statusLabel.Text = $Message
-    $reportBox.Text = "Working... This may take a few seconds."
+    $statusLabel.ForeColor = [System.Drawing.SystemColors]::ControlText
+    Set-FullReportView -Text "Working... This may take a few seconds."
 }
 
 function Start-ScriptOperation {

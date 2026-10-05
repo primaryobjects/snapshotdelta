@@ -1,5 +1,6 @@
 $ErrorActionPreference = "Stop"
-$executable = Join-Path $PSScriptRoot "PostRunCheck.exe"
+$projectRoot = Split-Path -Parent $PSScriptRoot
+$executable = Join-Path $projectRoot "dist\PostRunCheck.exe"
 if (-not (Test-Path -LiteralPath $executable -PathType Leaf)) {
     throw "PostRunCheck.exe was not built at $executable"
 }

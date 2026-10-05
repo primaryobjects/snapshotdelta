@@ -1,9 +1,10 @@
 param(
-    [string]$OutputPath = (Join-Path $PSScriptRoot "PostRunCheck.exe")
+    [string]$OutputPath = (Join-Path (Split-Path -Parent $PSScriptRoot) "dist\PostRunCheck.exe")
 )
 
 $ErrorActionPreference = "Stop"
-$sourcePath = Join-Path $PSScriptRoot "PostRunCheckLauncher.cs"
+$projectRoot = Split-Path -Parent $PSScriptRoot
+$sourcePath = Join-Path $projectRoot "src\PostRunCheckLauncher.cs"
 if (-not (Test-Path -LiteralPath $sourcePath -PathType Leaf)) {
     throw "Launcher source not found: $sourcePath"
 }

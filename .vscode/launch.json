@@ -5,7 +5,7 @@
       "name": "Run PostRunCheck",
       "type": "PowerShell",
       "request": "launch",
-      "script": "${workspaceFolder}\\Run-PostRunCheck.ps1",
+      "script": "${workspaceFolder}\\scripts\\Run-PostRunCheck.ps1",
       "cwd": "${workspaceFolder}",
       "preLaunchTask": "Build PostRunCheck"
     }
