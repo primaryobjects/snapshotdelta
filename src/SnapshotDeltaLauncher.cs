@@ -11,9 +11,15 @@ internal static class SnapshotDeltaLauncher
         try
         {
             string appDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            string guiScript = Path.GetFullPath(Path.Combine(
+            string guiScript = Path.Combine(
                 appDirectory,
-                @"..\scripts\SnapshotDelta-GUI.ps1"));
+                @"scripts\SnapshotDelta-GUI.ps1");
+            if (!File.Exists(guiScript))
+            {
+                guiScript = Path.GetFullPath(Path.Combine(
+                    appDirectory,
+                    @"..\scripts\SnapshotDelta-GUI.ps1"));
+            }
             if (!File.Exists(guiScript))
             {
                 throw new FileNotFoundException(

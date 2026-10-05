@@ -41,8 +41,8 @@ installed programs.
 - Press **F5** to build and run the app.
 - Press **Ctrl+Shift+B** to build the app without launching it.
 - Run **Terminal → Run Task → Build SnapshotDelta Release ZIP** to build
-  `release\SnapshotDelta.zip`. The ZIP includes the app and files needed to run
-  it; extract the archive and launch `dist\SnapshotDelta.exe`.
+  `release\SnapshotDelta.zip`. Extract it and run `SnapshotDelta.exe` from the
+  ZIP's root folder.
 
 ## Sandbox guidance
 

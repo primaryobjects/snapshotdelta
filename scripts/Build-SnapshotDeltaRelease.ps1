@@ -11,7 +11,7 @@ $temporaryArchive = Join-Path $outputDirectory ([guid]::NewGuid().ToString("N") 
 
 $packageFiles = @(
     @{ Source = "readme.md"; Destination = "README.md" }
-    @{ Source = "dist\SnapshotDelta.exe"; Destination = "dist\SnapshotDelta.exe" }
+    @{ Source = "dist\SnapshotDelta.exe"; Destination = "SnapshotDelta.exe" }
     @{ Source = "scripts\SnapshotDelta-GUI.ps1"; Destination = "scripts\SnapshotDelta-GUI.ps1" }
     @{ Source = "scripts\Capture-Snapshot.ps1"; Destination = "scripts\Capture-Snapshot.ps1" }
     @{ Source = "scripts\Compare-Snapshots.ps1"; Destination = "scripts\Compare-Snapshots.ps1" }
