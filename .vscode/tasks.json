@@ -25,6 +25,21 @@
       "dependsOn": "Build SnapshotDelta",
       "dependsOrder": "sequence",
       "problemMatcher": []
+    },
+    {
+      "label": "Build SnapshotDelta Release ZIP",
+      "type": "process",
+      "command": "powershell.exe",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}\\scripts\\Build-SnapshotDeltaRelease.ps1"
+      ],
+      "dependsOn": "Build SnapshotDelta",
+      "dependsOrder": "sequence",
+      "problemMatcher": []
     }
   ]
 }

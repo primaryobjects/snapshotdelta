@@ -17,7 +17,7 @@ internal static class SnapshotDeltaLauncher
             if (!File.Exists(guiScript))
             {
                 throw new FileNotFoundException(
-                    "SnapshotDelta-GUI.ps1 must be present in the project's scripts folder.",
+                    "SnapshotDelta could not find its GUI file: " + guiScript,
                     guiScript);
             }
 

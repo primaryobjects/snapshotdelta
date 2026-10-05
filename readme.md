@@ -1,5 +1,7 @@
 # SnapshotDelta
 
+[![GitHub Release](https://img.shields.io/github/v/release/primaryobjects/snapshotdelta)](https://github.com/primaryobjects/snapshotdelta/releases)
+
 SnapshotDelta is a Windows desktop app for capturing and comparing system
 snapshots in a sandbox VM before and after testing software.
 
@@ -38,6 +40,9 @@ installed programs.
 
 - Press **F5** to build and run the app.
 - Press **Ctrl+Shift+B** to build the app without launching it.
+- Run **Terminal → Run Task → Build SnapshotDelta Release ZIP** to build
+  `release\SnapshotDelta.zip`. The ZIP includes the app and files needed to run
+  it; extract the archive and launch `dist\SnapshotDelta.exe`.
 
 ## Sandbox guidance
 
