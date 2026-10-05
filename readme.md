@@ -3,6 +3,7 @@
 SnapshotDelta is a Windows desktop app for capturing and comparing system
 snapshots in a sandbox VM before and after testing software.
 
+![SnapshotDelta](/images/screenshot.png)
 Ideal for:
 
 - Malware‑analysis VMs
