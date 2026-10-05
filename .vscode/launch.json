@@ -2,12 +2,12 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run PostRunCheck",
+      "name": "Run SnapshotDelta",
       "type": "PowerShell",
       "request": "launch",
-      "script": "${workspaceFolder}\\scripts\\Run-PostRunCheck.ps1",
+      "script": "${workspaceFolder}\\scripts\\Run-SnapshotDelta.ps1",
       "cwd": "${workspaceFolder}",
-      "preLaunchTask": "Build PostRunCheck"
+      "preLaunchTask": "Build SnapshotDelta"
     }
   ]
 }

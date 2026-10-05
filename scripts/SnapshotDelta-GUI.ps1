@@ -1,16 +1,29 @@
 param()
 
 if ([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT) {
-    throw "PostRunCheck GUI can only run on Windows."
+    throw "SnapshotDelta can only run on Windows."
 }
 
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
+Add-Type -TypeDefinition @"
+using System;
+using System.Runtime.InteropServices;
+
+namespace SnapshotDelta
+{
+    public static class NativeIconMethods
+    {
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool DestroyIcon(IntPtr iconHandle);
+    }
+}
+"@
 [System.Windows.Forms.Application]::EnableVisualStyles()
 
 $scriptDirectory = Split-Path -Parent $MyInvocation.MyCommand.Path
-$snapshotScript = Join-Path $scriptDirectory "PostRunCheck.ps1"
-$compareScript = Join-Path $scriptDirectory "Compare-Triage.ps1"
+$snapshotScript = Join-Path $scriptDirectory "Capture-Snapshot.ps1"
+$compareScript = Join-Path $scriptDirectory "Compare-Snapshots.ps1"
 $snapshotRoot = "C:\"
 
 foreach ($scriptPath in @($snapshotScript, $compareScript)) {
@@ -28,15 +41,27 @@ function ConvertTo-ProcessArgument {
 }
 
 function Get-SnapshotDirectories {
-    return @(Get-ChildItem -LiteralPath $snapshotRoot -Directory -Filter "PostRunChecks_*" -ErrorAction Stop |
+    $directories = @(
+        Get-ChildItem -LiteralPath $snapshotRoot -Directory -Filter "SnapshotDelta_*" -ErrorAction Stop
+        Get-ChildItem -LiteralPath $snapshotRoot -Directory -Filter "PostRunChecks_*" -ErrorAction Stop
+    )
+    return @($directories |
         Sort-Object LastWriteTime -Descending)
 }
 
 $form = New-Object System.Windows.Forms.Form
-$form.Text = "PostRunCheck - Sandbox Triage"
+$form.Text = "SnapshotDelta - Sandbox Triage"
 $form.StartPosition = "CenterScreen"
 $form.Size = New-Object System.Drawing.Size(900, 690)
 $form.MinimumSize = New-Object System.Drawing.Size(760, 560)
+$formIconPath = Join-Path (Split-Path -Parent $scriptDirectory) "images\delta.png"
+$formIconBitmap = $null
+$formIconHandle = [IntPtr]::Zero
+if (Test-Path -LiteralPath $formIconPath -PathType Leaf) {
+    $formIconBitmap = [System.Drawing.Bitmap]::FromFile($formIconPath)
+    $formIconHandle = $formIconBitmap.GetHicon()
+    $form.Icon = [System.Drawing.Icon]::FromHandle($formIconHandle)
+}
 
 $snapshotButton = New-Object System.Windows.Forms.Button
 $snapshotButton.Text = "Take Snapshot"
@@ -331,7 +356,7 @@ function Complete-ScriptOperation {
         Set-FullReportView -Text $ErrorMessage
         [System.Windows.Forms.MessageBox]::Show(
             $ErrorMessage,
-            "PostRunCheck error",
+            "SnapshotDelta error",
             [System.Windows.Forms.MessageBoxButtons]::OK,
             [System.Windows.Forms.MessageBoxIcon]::Error
         ) | Out-Null
@@ -525,7 +550,7 @@ function Update-SnapshotLists {
 }
 
 $snapshotButton.Add_Click({
-    $snapshotBase = "C:\PostRunChecks_$(Get-Date -Format 'yyyyMMdd_HHmmss_fff')"
+    $snapshotBase = "C:\SnapshotDelta_$(Get-Date -Format 'yyyyMMdd_HHmmss_fff')"
     $snapshotPath = $snapshotBase
     $suffix = 1
     while (Test-Path -LiteralPath $snapshotPath) {
@@ -544,7 +569,7 @@ $refreshButton.Add_Click({
     } catch {
         $statusLabel.Text = "Could not list snapshots."
         [System.Windows.Forms.MessageBox]::Show(
-            $_.Exception.Message, "PostRunCheck error",
+            $_.Exception.Message, "SnapshotDelta error",
             [System.Windows.Forms.MessageBoxButtons]::OK,
             [System.Windows.Forms.MessageBoxIcon]::Error
         ) | Out-Null
@@ -602,3 +627,7 @@ try {
 
 [void]$form.ShowDialog()
 $script:operationTimer.Dispose()
+if ($formIconHandle -ne [IntPtr]::Zero) {
+    [void][SnapshotDelta.NativeIconMethods]::DestroyIcon($formIconHandle)
+    $formIconBitmap.Dispose()
+}

@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Build PostRunCheck",
+      "label": "Build SnapshotDelta",
       "type": "process",
       "command": "powershell.exe",
       "args": [
@@ -10,7 +10,7 @@
         "-ExecutionPolicy",
         "Bypass",
         "-File",
-        "${workspaceFolder}\\scripts\\Build-PostRunCheck.ps1"
+        "${workspaceFolder}\\scripts\\Build-SnapshotDelta.ps1"
       ],
       "group": {
         "kind": "build",
@@ -19,10 +19,10 @@
       "problemMatcher": []
     },
     {
-      "label": "Run PostRunCheck",
+      "label": "Run SnapshotDelta",
       "type": "process",
-      "command": "${workspaceFolder}\\dist\\PostRunCheck.exe",
-      "dependsOn": "Build PostRunCheck",
+      "command": "${workspaceFolder}\\dist\\SnapshotDelta.exe",
+      "dependsOn": "Build SnapshotDelta",
       "dependsOrder": "sequence",
       "problemMatcher": []
     }

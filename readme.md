@@ -1,6 +1,6 @@
-# PostRunCheck
+# SnapshotDelta
 
-PostRunCheck is a Windows desktop app for capturing and comparing system
+SnapshotDelta is a Windows desktop app for capturing and comparing system
 snapshots in a sandbox VM before and after testing software.
 
 Ideal for:
@@ -12,14 +12,15 @@ Ideal for:
 
 ## Start the app
 
-1. Run `dist\PostRunCheck.exe` as Administrator for the most complete results.
+1. Run `dist\SnapshotDelta.exe` as Administrator for the most complete results.
 2. Click **Take Snapshot** before testing the software.
 3. Run the software, then click **Take Snapshot** again.
 4. Choose the earlier snapshot as the baseline and the later one as the after
    snapshot, then click **Compare Snapshots**.
 
 Keep the project folders together so the app can find its supporting files.
-Snapshots are saved in timestamped folders under `C:\PostRunChecks_...`.
+New snapshots are saved in timestamped folders under `C:\SnapshotDelta_...`.
+Existing `C:\PostRunChecks_...` snapshots remain available for comparison.
 
 ## Review results
 
@@ -28,7 +29,7 @@ found, or a green check when none are detected. Select a category card or tab
 to review its findings, or open **Full Report** to see the complete comparison.
 Reports are also saved in the after-snapshot folder.
 
-PostRunCheck checks processes, services, startup entries, scheduled tasks,
+SnapshotDelta checks processes, services, startup entries, scheduled tasks,
 network connections, the hosts file, Defender status and detections, and
 installed programs.
 

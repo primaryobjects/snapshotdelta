@@ -1,4 +1,4 @@
-# PostRunCheck.ps1 (Normalized Version)
+# Capture-Snapshot.ps1 (Normalized Version)
 # Produces stable, diff-friendly triage output for hardened VMs
 
 param(
@@ -7,10 +7,10 @@ param(
 
 if ([string]::IsNullOrWhiteSpace($OutputDirectory)) {
     $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
-    $outDir = "C:\PostRunChecks_$timestamp"
+    $outDir = "C:\SnapshotDelta_$timestamp"
     $suffix = 1
     while (Test-Path $outDir) {
-        $outDir = "C:\PostRunChecks_${timestamp}_$suffix"
+        $outDir = "C:\SnapshotDelta_${timestamp}_$suffix"
         $suffix++
     }
 } else {

@@ -1,10 +1,10 @@
-# PostRunCheckDetail.ps1
+# Capture-SnapshotDetail.ps1
 # Detailed post-execution triage script for Windows VMs including full paths and descriptions of processes and files
 # Collects targeted evidence after running suspicious software
 
 # Create output folder with timestamp
 $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
-$outDir = "C:\PostRunChecks_$timestamp"
+$outDir = "C:\SnapshotDelta_$timestamp"
 New-Item -ItemType Directory -Path $outDir | Out-Null
 
 Write-Host "Saving results to $outDir"

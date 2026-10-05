@@ -4,7 +4,7 @@ using System.IO;
 using System.Text;
 using System.Windows.Forms;
 
-internal static class PostRunCheckLauncher
+internal static class SnapshotDeltaLauncher
 {
     private static int Main()
     {
@@ -13,11 +13,11 @@ internal static class PostRunCheckLauncher
             string appDirectory = AppDomain.CurrentDomain.BaseDirectory;
             string guiScript = Path.GetFullPath(Path.Combine(
                 appDirectory,
-                @"..\scripts\PostRunCheck-GUI.ps1"));
+                @"..\scripts\SnapshotDelta-GUI.ps1"));
             if (!File.Exists(guiScript))
             {
                 throw new FileNotFoundException(
-                    "PostRunCheck-GUI.ps1 must be present in the project's scripts folder.",
+                    "SnapshotDelta-GUI.ps1 must be present in the project's scripts folder.",
                     guiScript);
             }
 
@@ -70,9 +70,9 @@ internal static class PostRunCheckLauncher
 
                     MessageBox.Show(
                         details.Length == 0
-                            ? "The PostRunCheck GUI exited with code " + process.ExitCode + "."
+                            ? "SnapshotDelta exited with code " + process.ExitCode + "."
                             : details.ToString(),
-                        "PostRunCheck",
+                        "SnapshotDelta",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
                     return process.ExitCode == 0 ? 1 : process.ExitCode;
@@ -85,7 +85,7 @@ internal static class PostRunCheckLauncher
         {
             MessageBox.Show(
                 exception.Message,
-                "PostRunCheck could not start",
+                "SnapshotDelta could not start",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
             return 1;

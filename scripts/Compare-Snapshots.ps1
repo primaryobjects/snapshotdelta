@@ -1,4 +1,4 @@
-# Compare-TriageSmart.ps1
+# Compare-Snapshots.ps1
 # Creates a human-readable report of meaningful changes between two triage runs
 
 param(
